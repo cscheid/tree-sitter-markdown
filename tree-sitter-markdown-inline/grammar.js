@@ -109,6 +109,61 @@ module.exports = grammar(add_inline_rules({
 
         ...common.rules,
 
+        // posit markdown extension: attributes
+        attribute: $ => choice(
+          $.lang_attribute,
+          $.raw_attribute,
+          $.commonmark_attribute
+        ),
+        lang_attribute: $ => seq(
+          "{",
+          optional($._whitespace),
+          $.name,
+          optional($._whitespace),
+          "}"
+        ),
+        raw_specifier: $ => /=[a-zA-Z_][a-zA-Z0-9_-]*/,
+        raw_attribute: $ => seq(
+          "{",
+          optional($._whitespace),
+          $.raw_specifier,
+          optional($._whitespace),
+          "}"
+        ),
+        name: $ => token(prec(1, /[a-zA-Z_][a-zA-Z0-9_-]*/)),
+        id_specifier: $ => /#[a-zA-Z_][a-zA-Z0-9_-]*/,
+        class_specifier: $ => /\.[a-zA-Z_][a-zA-Z0-9_-]*/,
+
+        commonmark_attribute: $ => seq(
+          "{",
+          repeat($.id_specifier),
+          repeat($.class_specifier),
+          repeat($.key_value_specifier),
+          "}"
+        ),
+
+        number: $ => /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/,
+        boolean: $ => choice(token(prec(2, "true")), token(prec(2, "false"))),
+        string: $ => choice(
+          // a common way to use a "naked" string is as a URL fragment in a shortcode, such as
+          //
+          // {{< embed notebooks/data-screening.qmd#fig-spatial-plot >}}
+          //
+          // So we should try to allow characters that are likely to appear in URLs
+          //
+          // With that said, these non-alphanumeric characters should not be allowed to
+          // start a naked string in this way, in order to not introduce ambiguities with id specifiers,
+          // class specifiers, etc.
+          new RustRegex("[a-zA-Z0-9_-][a-zA-Z0-9_-#%+&=./]*"),
+          new RustRegex("'(?:[^'\\\\]|\\.)+'"),
+          new RustRegex('"(?:[^"\\\\]|\\.)+"'),
+        ),
+        key_value_specifier: $ => seq(
+          $.name,
+          "=",
+          $.value_specifier
+        ),
+        value_specifier: $ => choice($.name, $.string, $.number, $.boolean),
 
         // A lot of inlines are defined in `add_inline_rules`, including:
         //
@@ -119,11 +174,12 @@ module.exports = grammar(add_inline_rules({
         // This is done to reduce code duplication, as some inlines need to be parsed differently
         // depending on the context. For example inlines in ATX headings may not contain newlines.
 
-        code_span: $ => seq(
+        code_span: $ => prec.right(seq(
             alias($._code_span_start, $.code_span_delimiter),
             repeat(choice($._text_base, '[', ']', $._soft_line_break, $._html_tag)),
-            alias($._code_span_close, $.code_span_delimiter)
-        ),
+            alias($._code_span_close, $.code_span_delimiter),
+            optional($.attribute)
+        )),
 
         latex_block: $ => seq(
             alias($._latex_span_start, $.latex_span_delimiter),
