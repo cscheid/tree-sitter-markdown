@@ -110,7 +110,7 @@ module.exports = grammar(add_inline_rules({
         ...common.rules,
 
         // posit markdown extension: attributes
-        attribute: $ => choice(
+        qmd_attribute: $ => choice(
           $.lang_attribute,
           $.raw_attribute,
           $.commonmark_attribute
@@ -138,32 +138,33 @@ module.exports = grammar(add_inline_rules({
           "{",
           repeat($.id_specifier),
           repeat($.class_specifier),
-          repeat($.key_value_specifier),
+          // $._attribute is the syntax for HTML key-value attributes defined below.
+          repeat(alias($._attribute, $.key_value_specifier)),
           "}"
         ),
 
-        number: $ => /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/,
-        boolean: $ => choice(token(prec(2, "true")), token(prec(2, "false"))),
-        string: $ => choice(
-          // a common way to use a "naked" string is as a URL fragment in a shortcode, such as
-          //
-          // {{< embed notebooks/data-screening.qmd#fig-spatial-plot >}}
-          //
-          // So we should try to allow characters that are likely to appear in URLs
-          //
-          // With that said, these non-alphanumeric characters should not be allowed to
-          // start a naked string in this way, in order to not introduce ambiguities with id specifiers,
-          // class specifiers, etc.
-          new RustRegex("[a-zA-Z0-9_-][a-zA-Z0-9_-#%+&=./]*"),
-          new RustRegex("'(?:[^'\\\\]|\\.)+'"),
-          new RustRegex('"(?:[^"\\\\]|\\.)+"'),
-        ),
-        key_value_specifier: $ => seq(
-          $.name,
-          "=",
-          $.value_specifier
-        ),
-        value_specifier: $ => choice($.name, $.string, $.number, $.boolean),
+        // number: $ => /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/,
+        // boolean: $ => choice(token(prec(2, "true")), token(prec(2, "false"))),
+        // string: $ => choice(
+        //   // a common way to use a "naked" string is as a URL fragment in a shortcode, such as
+        //   //
+        //   // {{< embed notebooks/data-screening.qmd#fig-spatial-plot >}}
+        //   //
+        //   // So we should try to allow characters that are likely to appear in URLs
+        //   //
+        //   // With that said, these non-alphanumeric characters should not be allowed to
+        //   // start a naked string in this way, in order to not introduce ambiguities with id specifiers,
+        //   // class specifiers, etc.
+        //   new RustRegex("[a-zA-Z0-9_-][a-zA-Z0-9_-#%+&=./]*"),
+        //   new RustRegex("'(?:[^'\\\\]|\\.)+'"),
+        //   new RustRegex('"(?:[^"\\\\]|\\.)+"'),
+        // ),
+        // key_value_specifier: $ => seq(
+        //   $.name,
+        //   "=",
+        //   $.value_specifier
+        // ),
+        // value_specifier: $ => choice($.name, $.string, $.number, $.boolean),
 
         // A lot of inlines are defined in `add_inline_rules`, including:
         //
@@ -178,7 +179,7 @@ module.exports = grammar(add_inline_rules({
             alias($._code_span_start, $.code_span_delimiter),
             repeat(choice($._text_base, '[', ']', $._soft_line_break, $._html_tag)),
             alias($._code_span_close, $.code_span_delimiter),
-            optional($.attribute)
+            optional($.qmd_attribute)
         )),
 
         latex_block: $ => seq(
@@ -198,19 +199,21 @@ module.exports = grammar(add_inline_rules({
         //
         // https://github.github.com/gfm/#links
         _link_text: $ => prec.dynamic(PRECEDENCE_LEVEL_LINK, choice(
-            $._link_text_non_empty,
-            seq('[', ']')
+            seq($._link_text_non_empty, optional($.qmd_attribute)),
+            seq('[', ']', optional($.qmd_attribute)),
         )),
         _link_text_non_empty: $ => seq('[', alias($._inline_no_link, $.link_text), ']'),
         shortcut_link: $ => prec.dynamic(PRECEDENCE_LEVEL_LINK, $._link_text_non_empty),
         full_reference_link: $ => prec.dynamic(2 * PRECEDENCE_LEVEL_LINK, seq(
             $._link_text,
-            $.link_label
+            $.link_label,
+            optional($.qmd_attribute)
         )),
         collapsed_reference_link: $ => prec.dynamic(PRECEDENCE_LEVEL_LINK, seq(
             $._link_text,
             '[',
-            ']'
+            ']',
+            optional($.qmd_attribute)
         )),
         inline_link: $ => prec.dynamic(PRECEDENCE_LEVEL_LINK, seq(
             $._link_text,
@@ -229,7 +232,8 @@ module.exports = grammar(add_inline_rules({
                 ),
                 repeat(choice($._whitespace, $._soft_line_break)),
             )),
-            ')'
+            ')',
+            optional($.qmd_attribute)
         )),
 
         wiki_link: $ => prec.dynamic(2 * PRECEDENCE_LEVEL_LINK, seq(
@@ -281,11 +285,12 @@ module.exports = grammar(add_inline_rules({
                 ),
                 repeat(choice($._whitespace, $._soft_line_break)),
             )),
-            ')'
+            ')',
+            optional($.attribute)
         )),
-        _image_shortcut_link: $ => prec.dynamic(3 * PRECEDENCE_LEVEL_LINK, $._image_description_non_empty),
-        _image_full_reference_link: $ => prec.dynamic(PRECEDENCE_LEVEL_LINK, seq($._image_description, $.link_label)),
-        _image_collapsed_reference_link: $ => prec.dynamic(PRECEDENCE_LEVEL_LINK, seq($._image_description, '[', ']')),
+        _image_shortcut_link: $ => prec.dynamic(3 * PRECEDENCE_LEVEL_LINK, seq($._image_description_non_empty, optional($.attribute))),
+        _image_full_reference_link: $ => prec.dynamic(PRECEDENCE_LEVEL_LINK, seq($._image_description, $.link_label, optional($.attribute))),
+        _image_collapsed_reference_link: $ => prec.dynamic(PRECEDENCE_LEVEL_LINK, seq($._image_description, '[', ']', optional($.attribute))),
         _image_description: $ => prec.dynamic(3 * PRECEDENCE_LEVEL_LINK, choice($._image_description_non_empty, seq('!', '[', prec(1, ']')))),
         _image_description_non_empty: $ => seq('!', '[', alias($._inline, $.image_description), prec(1, ']')),
 
@@ -413,7 +418,9 @@ module.exports = grammar(add_inline_rules({
             $.numeric_character_reference,
             (common.EXTENSION_LATEX ? $.latex_block : choice()),
             $.code_span,
-            alias($._html_tag, $.html_tag),
+
+            // QMD CHANGE: WE DO NOT ALLOW HTML TAGS OUTSIDE OF RAW HTML INLINES AND BLOCKS            
+            // alias($._html_tag, $.html_tag),
             $._text_base,
             common.EXTENSION_TAGS ? $.tag : choice(),
             $._unclosed_span,
