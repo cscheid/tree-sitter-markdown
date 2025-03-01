@@ -435,7 +435,7 @@
       "required": true,
       "types": [
         {
-          "type": "name",
+          "type": "commonmark_name",
           "named": true
         }
       ]
@@ -829,10 +829,6 @@
     "named": false
   },
   {
-    "type": "-->",
-    "named": false
-  },
-  {
     "type": ".",
     "named": false
   },
@@ -853,18 +849,6 @@
     "named": false
   },
   {
-    "type": "<!--",
-    "named": false
-  },
-  {
-    "type": "<![CDATA[",
-    "named": false
-  },
-  {
-    "type": "<?",
-    "named": false
-  },
-  {
     "type": "=",
     "named": false
   },
@@ -874,10 +858,6 @@
   },
   {
     "type": "?",
-    "named": false
-  },
-  {
-    "type": "?>",
     "named": false
   },
   {
@@ -894,10 +874,6 @@
   },
   {
     "type": "]",
-    "named": false
-  },
-  {
-    "type": "]]>",
     "named": false
   },
   {
@@ -921,6 +897,10 @@
     "named": true
   },
   {
+    "type": "commonmark_name",
+    "named": true
+  },
+  {
     "type": "email_autolink",
     "named": true
   },
@@ -938,10 +918,6 @@
   },
   {
     "type": "latex_span_delimiter",
-    "named": true
-  },
-  {
-    "type": "name",
     "named": true
   },
   {
