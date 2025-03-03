@@ -91,11 +91,6 @@ module.exports = grammar(add_inline_rules({
         [$.shortcut_link, $._link_text],
         [$.link_destination, $.link_title],
         [$._link_destination_parenthesis, $.link_title],
-
-        [$.wiki_link, $._inline_element],
-        [$.wiki_link, $._inline_element_no_star],
-        [$.wiki_link, $._inline_element_no_underscore],
-        [$.wiki_link, $._inline_element_no_tilde],
     ],
     extras: $ => [],
 
@@ -173,29 +168,6 @@ module.exports = grammar(add_inline_rules({
             ')',
             optional($._qmd_attribute)
         ))),
-
-        wiki_link: $ => prec.dynamic(2 * PRECEDENCE_LEVEL_LINK, seq(
-            '[', '[',
-            alias($._wiki_link_destination, $.link_destination),
-            optional(seq(
-                '|',
-                alias($._wiki_link_text, $.link_text)
-            )),
-            ']', ']'
-            )
-        ),
-
-        _wiki_link_destination: $ => repeat1(choice(
-            $._word,
-            common.punctuation_without($, ['[',']', '|']),
-            $._whitespace,
-        )),
-
-        _wiki_link_text: $ => repeat1(choice(
-            $._word,
-            common.punctuation_without($, ['[',']']),
-            $._whitespace,
-        )),
 
         // Images work exactly like links with a '!' added in front.
         //
@@ -380,12 +352,8 @@ function add_inline_rules(grammar) {
                         $.full_reference_link,
                         $.collapsed_reference_link,
                         $.inline_link,
-                        // (common.EXTENSION_WIKI_LINK && $.wiki_link),
                         seq(choice('[', ']'), optional($._last_token_punctuation)),
                     ]);
-                    if (common.EXTENSION_WIKI_LINK) {
-                        elements.push($.wiki_link);
-                    }
                 }
                 return choice(...elements);
             };
