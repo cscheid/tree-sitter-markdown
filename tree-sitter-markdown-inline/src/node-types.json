@@ -21,7 +21,7 @@
           "named": true
         },
         {
-          "type": "lang_attribute",
+          "type": "language_attribute",
           "named": true
         },
         {
@@ -44,7 +44,7 @@
           "named": true
         },
         {
-          "type": "lang_attribute",
+          "type": "language_attribute",
           "named": true
         },
         {
@@ -173,7 +173,7 @@
           "named": true
         },
         {
-          "type": "lang_attribute",
+          "type": "language_attribute",
           "named": true
         },
         {
@@ -213,7 +213,7 @@
           "named": true
         },
         {
-          "type": "lang_attribute",
+          "type": "language_attribute",
           "named": true
         },
         {
@@ -399,7 +399,7 @@
           "named": true
         },
         {
-          "type": "lang_attribute",
+          "type": "language_attribute",
           "named": true
         },
         {
@@ -427,7 +427,7 @@
     "fields": {}
   },
   {
-    "type": "lang_attribute",
+    "type": "language_attribute",
     "named": true,
     "fields": {},
     "children": {
@@ -435,7 +435,7 @@
       "required": true,
       "types": [
         {
-          "type": "commonmark_name",
+          "type": "language",
           "named": true
         }
       ]
@@ -897,10 +897,6 @@
     "named": true
   },
   {
-    "type": "commonmark_name",
-    "named": true
-  },
-  {
     "type": "email_autolink",
     "named": true
   },
@@ -914,6 +910,10 @@
   },
   {
     "type": "id_specifier",
+    "named": true
+  },
+  {
+    "type": "language",
     "named": true
   },
   {

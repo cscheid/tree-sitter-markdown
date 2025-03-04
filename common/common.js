@@ -112,15 +112,13 @@ module.exports.rules = {
 
     // posit markdown extension: attributes
     _qmd_attribute: $ => choice(
-      $.lang_attribute,
+      $.language_attribute,
       $.raw_attribute,
       $.commonmark_attribute
     ),
-    lang_attribute: $ => seq(
+    language_attribute: $ => seq(
       "{",
-      // optional($._whitespace),
-      $.commonmark_name,
-      // optional($._whitespace),
+      alias($.commonmark_name, $.language),
       "}"
     ),
     raw_specifier: $ => /=[a-zA-Z_][a-zA-Z0-9_-]*/,
@@ -134,7 +132,7 @@ module.exports.rules = {
     ),
     commonmark_name: $ => token(prec(1, /[a-zA-Z_][a-zA-Z0-9_-]*/)),
     id_specifier: $ => /[#][a-zA-Z_][a-zA-Z0-9_-]*/,
-    class_specifier: $ => ".class", ///[.][a-zA-Z_][a-zA-Z0-9_-]*/,
+    class_specifier: $ => /[.][a-zA-Z_][a-zA-Z0-9_-]*/,
 
     commonmark_attribute: $ => prec(2, seq(
       "{",

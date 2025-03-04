@@ -1463,7 +1463,7 @@
       "members": [
         {
           "type": "SYMBOL",
-          "name": "lang_attribute"
+          "name": "language_attribute"
         },
         {
           "type": "SYMBOL",
@@ -1475,7 +1475,7 @@
         }
       ]
     },
-    "lang_attribute": {
+    "language_attribute": {
       "type": "SEQ",
       "members": [
         {
@@ -1483,8 +1483,13 @@
           "value": "{"
         },
         {
-          "type": "SYMBOL",
-          "name": "commonmark_name"
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "commonmark_name"
+          },
+          "named": true,
+          "value": "language"
         },
         {
           "type": "STRING",
@@ -1557,8 +1562,8 @@
       "value": "[#][a-zA-Z_][a-zA-Z0-9_-]*"
     },
     "class_specifier": {
-      "type": "STRING",
-      "value": ".class"
+      "type": "PATTERN",
+      "value": "[.][a-zA-Z_][a-zA-Z0-9_-]*"
     },
     "commonmark_attribute": {
       "type": "PREC",
